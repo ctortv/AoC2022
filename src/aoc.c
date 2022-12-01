@@ -8,9 +8,8 @@
 
 typedef int (*aoc_day_fn)(int, char **);
 
-
 static const aoc_day_fn aoc_days[][2] = {
-  { aoc_day0_p0, NULL },
+  { aoc_day0_p0, aoc_day0_p1 },
 };
 
 int main(int argc, char **argv) {
@@ -52,7 +51,7 @@ err0:
   goto err; /* no fall-through */
 
 err:
-  return -1;
+  return EXIT_FAILURE;
 }
 
 
