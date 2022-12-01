@@ -1,4 +1,6 @@
 aoc_SOURCES = \
-								 aoc.c \
-								 $(NULL)
+								utils.c \
+								day0.c \
+								aoc.c \
+								$(NULL)
 
