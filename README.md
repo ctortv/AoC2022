@@ -29,3 +29,12 @@ $ ./src/aoc 0 1 src/input/day0_p1_1.txt
 total calories: 205805
 ```
 
+## Day 1
+
+### Puzzle 0
+
+```bash
+$ ./src/aoc 1 0 src/input/day1_p0_1.txt
+RPS Total: 14069
+```
+

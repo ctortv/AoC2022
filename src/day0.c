@@ -188,7 +188,7 @@ err1:
 
 err0:
   fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 0 0 <path>\n");
+  fprintf(stderr, "usage: aoc 0 1 <path>\n");
   goto err;
 
 err:
