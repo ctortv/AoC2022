@@ -38,3 +38,10 @@ $ ./src/aoc 1 0 src/input/day1_p0_1.txt
 RPS Total: 14069
 ```
 
+### Puzzle 1
+
+```bash
+$ ./src/aoc 1 1 src/input/day1_p1_1.txt
+Strategy Total: 12411
+```
+
