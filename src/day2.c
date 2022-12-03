@@ -196,7 +196,7 @@ static int group_comparer(const void * l, const void * r)
   const char * const * lhs = l, * const * rhs = r;
   size_t l_len = strnlen(*lhs, max_line_len);
   size_t r_len = strnlen(*rhs, max_line_len);
-  size_t diff = l_len > r_len ? l_len - r_len : l_len - r_len;
+  size_t diff = l_len > r_len ? l_len - r_len : r_len - l_len;
   return diff == 0 ? 0 : diff > INT_MAX ? -1 : 1;
 }
 
