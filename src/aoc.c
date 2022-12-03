@@ -13,7 +13,7 @@ typedef int (*aoc_day_fn)(int, char **);
 static const aoc_day_fn aoc_days[][2] = {
   { aoc_day0_p0, aoc_day0_p1 },
   { aoc_day1_p0, aoc_day1_p1 },
-  { aoc_day2_p0, NULL }
+  { aoc_day2_p0, aoc_day2_p1 }
 };
 
 int main(int argc, char **argv) {
