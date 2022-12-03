@@ -72,6 +72,8 @@ Find the item type that appears in both compartments of each rucksack. What is
 the sum of the priorities of those item types?
 */
 
+int score_item(const char item);
+
 int aoc_day2_p0(int argc, char **argv) {
   if(argc < 4) { goto err0; }
 
@@ -110,12 +112,7 @@ int aoc_day2_p0(int argc, char **argv) {
     } while(lhs++ < mid_start);
 
 done: ;
-    const char item = *match;
-    total_score += item <= 'Z'
-      /* Score uppercase */
-      ? (item - 'A') + 27
-      /* Score lowercase */
-      : (item - 'a') + 1;
+    total_score += score_item(*match);
   }
 
   fprintf(stdout, "Rucksack Priorities: %i\n", total_score);
@@ -254,13 +251,7 @@ int aoc_day2_p1(int argc, char **argv) {
 
 done:
       index = 0;
-      const char item = *match;
-
-      int badge = item <= 'Z'
-        // Score uppercase
-        ? (item - 'A') + 27
-        // Score lowercase
-        : (item - 'a') + 1;
+      int badge = score_item(*match);
 
       total_score += badge;
 
@@ -292,5 +283,13 @@ err0:
 
 err:
   return EXIT_FAILURE;
+}
+
+inline int score_item(const char item) {
+  return item <= 'Z'
+    // Score uppercase
+    ? (item - 'A') + 27
+    // Score lowercase
+    : (item - 'a') + 1;
 }
 
