@@ -52,8 +52,6 @@ int read_lines(int argc, char **argv, void * state, aoc_fn fn) {
 
   while((read = getline(&line, &len, fp)) != -1) {
     if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-
     fn(line, read, state);
   }
 

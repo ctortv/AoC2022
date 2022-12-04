@@ -47,59 +47,34 @@ fourth Elf).
 Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
 */
 
-int aoc_day0_p0(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
+typedef struct {
+  size_t current_elf;
+  size_t best_elf;
+  unsigned long total_calories;
+  unsigned long max_calories;
+} day_0_state;
 
-  const char * input = argv[3];
-
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
-
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
-
-  size_t current_elf = 0, best_elf = 0;
-  unsigned long total_calories = 0, max_calories = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) {
-      if(total_calories > max_calories) {
-        best_elf = current_elf;
-        max_calories = total_calories;
-      }
-      total_calories = 0;
-      current_elf++;
-      continue;
+void aoc_day0_p0_worker(const char * line, ssize_t read, void * state) {
+  day_0_state * S = (day_0_state *)state;
+  if(read <= 1) {
+    if(S->total_calories > S->max_calories) {
+      S->best_elf = S->current_elf;
+      S->max_calories = S->total_calories;
     }
-
-    unsigned long item_calories = parse_arg(line, false);
-    total_calories += item_calories;
+    S->total_calories = 0;
+    S->current_elf++;
+    return;
   }
-  fclose(fp);
-  free(line), line = NULL;
 
-  fprintf(stdout, "best elf: %zu, max calories: %zu\n", best_elf + 1, max_calories);
+  unsigned long item_calories = parse_arg(line, false);
+  S->total_calories += item_calories;
+}
 
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 0 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+int aoc_day0_p0(int argc, char **argv) {
+  day_0_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day0_p0_worker);
+  fprintf(stdout, "best elf: %zu, max calories: %zu\n", state.best_elf + 1, state.max_calories);
+  return result;
 }
 
 /*

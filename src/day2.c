@@ -81,6 +81,8 @@ typedef struct {
 int score_item(const char item);
 
 void aoc_day2_p0_worker(const char * line, ssize_t read, void * state) {
+  if(read <= 1) { return; }
+
   day_2_state * S = (day_2_state *)state;
 
   const size_t line_len = strnlen(line, max_line_len);
@@ -170,7 +172,8 @@ typedef struct {
 } day_2_p2_state;
 
 void aoc_day2_p1_worker(const char * line, ssize_t read, void * state) {
-  (void)read;
+  if(read <= 1) { return; }
+
   day_2_p2_state * S = (day_2_p2_state *)state;
   const size_t line_len = strnlen(line, max_line_len);
 

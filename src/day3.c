@@ -98,7 +98,7 @@ In how many assignment pairs does one range fully contain the other?
 */
 
 static void aoc_day3_p0_worker(const char * line, ssize_t read, void * state) {
-  (void)read;
+  if(read <= 1) { return; }
   day_3_state * S = (day_3_state *)state;
 
   const char * s = line;
@@ -139,7 +139,8 @@ In how many assignment pairs do the ranges overlap?
 */
 
 static void aoc_day3_p1_worker(const char * line, ssize_t read, void * state) {
-  (void)read;
+  if(read <= 1) { return; }
+
   day_3_state * S = (day_3_state *)state;
   const char * s = line;
 

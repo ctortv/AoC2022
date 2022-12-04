@@ -61,6 +61,9 @@ strategy guide?
 */
 
 static void aoc_day1_p0_worker(const char * line, ssize_t read, void * state) {
+  if(read <= 1) { return; }
+
+
   day_1_state * S = (day_1_state *)state;
   const char * const end = line + read;
   const char my_shape = *(end - 2);
@@ -116,6 +119,8 @@ score be if everything goes exactly according to your strategy guide?
 */
 
 static void aoc_day1_p1_worker(const char * line, ssize_t read, void * state) {
+  if(read <= 1) { return; }
+
   day_1_state * S = (day_1_state  *)state;
   const char * const end = line + read;
   const char my_shape = *(end - 2);
