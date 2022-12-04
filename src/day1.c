@@ -3,7 +3,12 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include "../include/utils.h"
 #include "../include/day1.h"
+
+typedef struct {
+  int total_score;
+} day_1_state;
 
 static int adjust_score(const int key, const int opponent_score);
 
@@ -55,66 +60,31 @@ What would your total score be if everything goes exactly according to your
 strategy guide?
 */
 
-int aoc_day1_p0(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
+static void aoc_day1_p0_worker(const char * line, ssize_t read, void * state) {
+  day_1_state * S = (day_1_state *)state;
+  const char * const end = line + read;
+  const char my_shape = *(end - 2);
+  const char their_shape = *line;
+  /* my shapes are X..Z, worth 1..3 points, respectively */
+  const int shape_score = (my_shape - 'Z') + 3;
+  /* their shapes are A..C, worth 1..3 points, respectively */
+  const int opponent_score = (their_shape - 'C') + 3;
 
-  const char * input = argv[3];
+  S->total_score += shape_score;
 
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
-
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
-
-  int total_score = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-
-    const char * const end = line + read;
-    const char my_shape = *(end - 2);
-    const char their_shape = *line;
-    /* my shapes are X..Z, worth 1..3 points, respectively */
-    const int shape_score = (my_shape - 'Z') + 3;
-    /* their shapes are A..C, worth 1..3 points, respectively */
-    const int opponent_score = (their_shape - 'C') + 3;
-
-    total_score += shape_score;
-
-    const int diff = shape_score - opponent_score;
-    /* 3 points for a tie... */
-    if(diff == 0) { total_score += 3; }
-    /* 6 points for a win */
-    else if(diff == 1 || diff == -2) { total_score += 6; }
-  }
-
-  fprintf(stdout, "RPS Total: %i\n", total_score);
-
-  free(line), line = NULL;
-  fclose(fp);
-
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 1 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+  const int diff = shape_score - opponent_score;
+  /* 3 points for a tie... */
+  if(diff == 0) { S->total_score += 3; }
+  /* 6 points for a win */
+  else if(diff == 1 || diff == -2) { S->total_score += 6; }
 }
 
+int aoc_day1_p0(int argc, char **argv) {
+  day_1_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day1_p0_worker);
+  fprintf(stdout, "RPS Total: %i\n", state.total_score);
+  return result;
+}
 
 /*
 --- Part Two ---
@@ -143,68 +113,33 @@ would get a total score of 12.
 
 Following the Elf's instructions for the second column, what would your total
 score be if everything goes exactly according to your strategy guide?
-
 */
+
+static void aoc_day1_p1_worker(const char * line, ssize_t read, void * state) {
+  day_1_state * S = (day_1_state  *)state;
+  const char * const end = line + read;
+  const char my_shape = *(end - 2);
+  const char their_shape = *line;
+
+  /* their shapes are A..C, worth 1..3 points, respectively */
+  const int opponent_score = (their_shape - 'C') + 3;
+  /* adjust per the strategy... */
+  int shape_score = adjust_score((my_shape - 'Z') + 3, opponent_score);
+
+  S->total_score += shape_score;
+
+  const int diff = shape_score - opponent_score;
+  /* 3 points for a tie... */
+  if(diff == 0) { S->total_score += 3; }
+  /* 6 points for a win */
+  else if(diff == 1 || diff == -2) { S->total_score += 6; }
+}
+
 int aoc_day1_p1(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
-
-  const char * input = argv[3];
-
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
-
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
-
-
-  int total_score = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-
-    const char * const end = line + read;
-    const char my_shape = *(end - 2);
-    const char their_shape = *line;
-
-    /* their shapes are A..C, worth 1..3 points, respectively */
-    const int opponent_score = (their_shape - 'C') + 3;
-    /* adjust per the strategy... */
-    int shape_score = adjust_score((my_shape - 'Z') + 3, opponent_score);
-
-    total_score += shape_score;
-
-    const int diff = shape_score - opponent_score;
-    /* 3 points for a tie... */
-    if(diff == 0) { total_score += 3; }
-    /* 6 points for a win */
-    else if(diff == 1 || diff == -2) { total_score += 6; }
-  }
-
-  fprintf(stdout, "Strategy Total: %i\n", total_score);
-
-  free(line), line = NULL;
-  fclose(fp);
-
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 1 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+  day_1_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day1_p1_worker);
+  fprintf(stdout, "Strategy Total: %i\n", state.total_score);
+  return result;
 }
 
 static int adjust_score(const int key, const int opponent_score) {

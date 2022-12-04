@@ -6,9 +6,11 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include "../include/utils.h"
 #include "../include/day2.h"
 
 static const size_t max_line_len = /* arbitrary: */ 1024;
+static int group_comparer(const void * l, const void * r);
 
 /*
 One Elf has the important job of loading all of the rucksacks with supplies
@@ -72,73 +74,44 @@ Find the item type that appears in both compartments of each rucksack. What is
 the sum of the priorities of those item types?
 */
 
+typedef struct {
+  int total_score;
+} day_2_state;
+
 int score_item(const char item);
 
-int aoc_day2_p0(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
+void aoc_day2_p0_worker(const char * line, ssize_t read, void * state) {
+  day_2_state * S = (day_2_state *)state;
 
-  const char * input = argv[3];
+  const size_t line_len = strnlen(line, max_line_len);
+  if(line_len < 1) { return; }
 
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
+  const size_t mid_point = line_len / 2;
+  const char * const end = line + read;
 
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
+  const char * lhs = line;
 
-  int total_score = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-
-    const size_t line_len = strnlen(line, max_line_len);
-    if(line_len < 1) { continue; }
-
-    const size_t mid_point = line_len / 2;
-    const char * const end = line + read;
-
-    const char * lhs = line;
-
-    const char * match = NULL;
-    const char * mid_start = line + mid_point;
+  const char * match = NULL;
+  const char * mid_start = line + mid_point;
+  do {
+    const char * rhs = mid_start;
     do {
-      const char * rhs = mid_start;
-      do {
-        if(*lhs == *rhs) {
-          match = lhs;
-          goto done;
-        }
-      } while(rhs++ < end);
-    } while(lhs++ < mid_start);
+      if(*lhs == *rhs) {
+        match = lhs;
+        goto done;
+      }
+    } while(rhs++ < end);
+  } while(lhs++ < mid_start);
 
 done: ;
-    total_score += score_item(*match);
-  }
+  S->total_score += score_item(*match);
+}
 
-  fprintf(stdout, "Rucksack Priorities: %i\n", total_score);
-
-  free(line), line = NULL;
-  fclose(fp);
-
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 1 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+int aoc_day2_p0(int argc, char **argv) {
+  day_2_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day2_p0_worker);
+  fprintf(stdout, "Rucksack Priorities: %i\n", state.total_score);
+  return result;
 }
 
 /*
@@ -188,101 +161,63 @@ Find the item type that corresponds to the badges of each three-Elf group. What
 is the sum of the priorities of those item types?
 */
 
-static int group_comparer(const void * l, const void * r)
-{
-  const char * const * lhs = l, * const * rhs = r;
-  size_t l_len = strnlen(*lhs, max_line_len);
-  size_t r_len = strnlen(*rhs, max_line_len);
-  size_t diff = l_len > r_len ? l_len - r_len : r_len - l_len;
-  return diff == 0 ? 0 : diff > INT_MAX ? -1 : 1;
+typedef struct {
+  int total_score;
+  char padding[4];
+  size_t index;
+  /* horrible, but whatev */
+  char * groups[3];
+} day_2_p2_state;
+
+void aoc_day2_p1_worker(const char * line, ssize_t read, void * state) {
+  (void)read;
+  day_2_p2_state * S = (day_2_p2_state *)state;
+  const size_t line_len = strnlen(line, max_line_len);
+
+  const char * match = NULL;
+  S->groups[S->index] = calloc(line_len, sizeof S->groups[0]);
+  if(!S->groups[S->index]) { abort(); }
+
+  memmove(S->groups[S->index], line, line_len);
+
+  S->index++;
+  if(S->index % 3 == 0) {
+    const char * sorted[3] = { S->groups[0], S->groups[1], S->groups[2] };
+
+    qsort(sorted, 3, sizeof * sorted, group_comparer);
+    const char * first = sorted[2];
+    const char * fend = first + strnlen(first, max_line_len);
+
+    do {
+      const char * second = sorted[1];
+      const char * send = second + strnlen(second, max_line_len);
+      do {
+        const char * third = sorted[0];
+        const char * tend = third + strnlen(third, max_line_len);
+        do {
+          if(*first == *second && *second == *third) {
+            match = first;
+            goto done;
+          }
+        } while(third++ < tend);
+      } while(second++ < send);
+    } while(first++ < fend);
+
+done:
+    S->index = 0;
+    int badge = score_item(*match);
+
+    S->total_score += badge;
+
+    free(S->groups[0]), free(S->groups[1]), free(S->groups[2]);
+  }
 }
 
 int aoc_day2_p1(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
-
-  const char * input = argv[3];
-
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
-
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
-
-  /* horrible, but whatev */
-  char * groups[3] = { 0 };
-
-  int total_score = 0;
-  size_t index = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-
-    const size_t line_len = strnlen(line, max_line_len);
-
-    const char * match = NULL;
-    groups[index] = calloc(line_len, sizeof groups[0]);
-    if(!groups[index]) { abort(); }
-
-    memmove(groups[index], line, line_len);
-
-    index++;
-    if(index % 3 == 0) {
-      const char * sorted[3] = { groups[0], groups[1], groups[2] };
-
-      qsort(sorted, 3, sizeof * sorted, group_comparer);
-      const char * first = sorted[2];
-      const char * fend = first + strnlen(first, max_line_len);
-
-      do {
-        const char * second = sorted[1];
-        const char * send = second + strnlen(second, max_line_len);
-        do {
-          const char * third = sorted[0];
-          const char * tend = third + strnlen(third, max_line_len);
-          do {
-            if(*first == *second && *second == *third) {
-              match = first;
-              goto done;
-            }
-          } while(third++ < tend);
-        } while(second++ < send);
-      } while(first++ < fend);
-
-done:
-      index = 0;
-      int badge = score_item(*match);
-
-      total_score += badge;
-
-      free(groups[0]), free(groups[1]), free(groups[2]);
-    }
-  }
-
-  fprintf(stdout, "Common Rucksack Priorities: %i\n", total_score);
-
-  free(line), line = NULL;
-  fclose(fp);
-
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 1 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+  day_2_p2_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day2_p1_worker);
+  fprintf(stdout, "Common Rucksack Priorities: %i\n", state.total_score);
+  return result;
 }
 
 inline int score_item(const char item) {
@@ -293,3 +228,10 @@ inline int score_item(const char item) {
     : (item - 'a') + 1;
 }
 
+static int group_comparer(const void * l, const void * r) {
+  const char * const * lhs = l, * const * rhs = r;
+  size_t l_len = strnlen(*lhs, max_line_len);
+  size_t r_len = strnlen(*rhs, max_line_len);
+  size_t diff = l_len > r_len ? l_len - r_len : r_len - l_len;
+  return diff == 0 ? 0 : diff > INT_MAX ? -1 : 1;
+}
