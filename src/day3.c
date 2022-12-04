@@ -10,6 +10,10 @@
 #include "../include/utils.h"
 #include "../include/day3.h"
 
+typedef struct {
+  uint32_t total_score;
+} day_3_state;
+
 // 2-4
 typedef struct {
   uint32_t min;
@@ -93,55 +97,23 @@ In how many assignment pairs does one range fully contain the other?
 
 */
 
-int aoc_day3_p0(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
+static void aoc_day3_p0_worker(const char * line, void * state) {
+  day_3_state * S = (day_3_state *)state;
 
-  const char * input = argv[3];
-
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
-
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
-
-  uint32_t total_score = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-    const char * s = line;
-    pair P = { 0 };
-    parse_pair(&s, &P);
-    const range L = P.left, R = P.right;
-    if((L.min >= R.min && L.max <= R.max) || (R.min >= L.min && R.max <= L.max)) {
-      total_score++;
-    }
+  const char * s = line;
+  pair P = { 0 };
+  parse_pair(&s, &P);
+  const range L = P.left, R = P.right;
+  if((L.min >= R.min && L.max <= R.max) || (R.min >= L.min && R.max <= L.max)) {
+    S->total_score++;
   }
+}
 
-  fprintf(stdout, "Assignment pairs inclusive: %i\n", total_score);
-
-  free(line), line = NULL;
-  fclose(fp);
-
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 1 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+int aoc_day3_p0(int argc, char **argv) {
+  day_3_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day3_p0_worker);
+  fprintf(stdout, "Assignment pairs inclusive: %i\n", state.total_score);
+  return result;
 }
 
 
@@ -164,55 +136,24 @@ So, in this example, the number of overlapping assignment pairs is 4.
 
 In how many assignment pairs do the ranges overlap?
 */
-int aoc_day3_p1(int argc, char **argv) {
-  if(argc < 4) { goto err0; }
 
-  const char * input = argv[3];
+static void aoc_day3_p1_worker(const char * line, void * state) {
+  day_3_state * S = (day_3_state *)state;
+  const char * s = line;
 
-  FILE * fp = fopen(input, "r");
-  if(!fp || errno) { goto err1; }
-
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read = 0;
-
-  uint32_t total_score = 0;
-  while((read = getline(&line, &len, fp)) != -1) {
-    if(errno) { goto err2; }
-    if(read <= 1) { continue; }
-    const char * s = line;
-    pair P = { 0 };
-    parse_pair(&s, &P);
-    const range L = P.left, R = P.right;
-    if((L.min <= R.max && L.max >= R.max) || (R.min <= L.max && R.max >= L.max)) {
-      total_score++;
-    }
+  pair P = { 0 };
+  parse_pair(&s, &P);
+  const range L = P.left, R = P.right;
+  if((L.min <= R.max && L.max >= R.max) || (R.min <= L.max && R.max >= L.max)) {
+    S->total_score++;
   }
+}
 
-  fprintf(stdout, "Assignment pairs inclusive: %i\n", total_score);
-
-  free(line), line = NULL;
-  fclose(fp);
-
-  return EXIT_SUCCESS;
-
-err2:
-  fclose(fp);
-  free(line), line = NULL;
-  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
-  goto err;
-
-err1:
-  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
-  goto err;
-
-err0:
-  fprintf(stderr, "listen, i need a path/file name, bud.\n");
-  fprintf(stderr, "usage: aoc 1 0 <path>\n");
-  goto err;
-
-err:
-  return EXIT_FAILURE;
+int aoc_day3_p1(int argc, char **argv) {
+  day_3_state state = { 0 };
+  int result = read_lines(argc, argv, &state, &aoc_day3_p1_worker);
+  fprintf(stdout, "Assignment pairs inclusive: %i\n", state.total_score);
+  return result;
 }
 
 static void parse_pair(const char ** str, pair * P) {

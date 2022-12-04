@@ -38,3 +38,48 @@ err:
 }
 
 
+int read_lines(int argc, char **argv, void * state, aoc_fn fn) {
+  if(argc < 4) { goto err0; }
+
+  const char * input = argv[3];
+
+  FILE * fp = fopen(input, "r");
+  if(!fp || errno) { goto err1; }
+
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read = 0;
+
+  while((read = getline(&line, &len, fp)) != -1) {
+    if(errno) { goto err2; }
+    if(read <= 1) { continue; }
+
+    fn(line, state);
+  }
+
+  free(line), line = NULL;
+  fclose(fp);
+
+  return EXIT_SUCCESS;
+
+err2:
+  fclose(fp);
+  free(line), line = NULL;
+  fprintf(stderr, "oh no, i can't read a line from '%s'! i'm dead. :(\n", input);
+  goto err;
+
+err1:
+  fprintf(stderr, "'%s' doesn't exist or i couldn't open it. i tried :(\n", input);
+  goto err;
+
+err0:
+  fprintf(stderr, "listen, i need a path/file name, bud.\n");
+  fprintf(stderr, "usage: aoc 1 0 <path>\n");
+  goto err;
+
+err:
+  return EXIT_FAILURE;
+}
+
+
+
