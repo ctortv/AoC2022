@@ -8,6 +8,7 @@
 typedef void(*aoc_fn)(const char * line, ssize_t read, void * state);
 
 unsigned long parse_arg(const char *, bool);
+void parse_uint(const char * str, uint32_t * I);
 int read_lines(int argc, char **argv, void * state, aoc_fn fn) ;
 
 inline void swapul(unsigned long *lhs, unsigned long *rhs) {

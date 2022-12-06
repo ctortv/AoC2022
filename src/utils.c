@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <assert.h>
 
 #include "../include/utils.h"
 
@@ -49,7 +50,6 @@ int read_lines(int argc, char **argv, void * state, aoc_fn fn) {
   char * line = NULL;
   size_t len = 0;
   ssize_t read = 0;
-
   while((read = getline(&line, &len, fp)) != -1) {
     if(errno) { goto err2; }
     fn(line, read, state);
@@ -79,5 +79,20 @@ err:
   return EXIT_FAILURE;
 }
 
+void parse_uint(const char * str, uint32_t * I) {
+  static const int AOC_BASE = 10;
+  const unsigned long number = strtoul(str, NULL, AOC_BASE);
+  if(errno == ERANGE) { goto err; }
+  if(errno) { goto err; }
+
+  assert(number <= UINT32_MAX);
+  *I = (uint32_t)number;
+
+  return;
+
+err:
+  fprintf(stderr, "parse error: %s cannot parse to unsigned long.\n", str);
+  exit(EXIT_FAILURE);
+}
 
 

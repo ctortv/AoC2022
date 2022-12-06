@@ -8,6 +8,7 @@
 #include "../include/day1.h"
 #include "../include/day2.h"
 #include "../include/day3.h"
+#include "../include/day4.h"
 
 typedef int (*aoc_day_fn)(int, char **);
 
@@ -15,7 +16,8 @@ static const aoc_day_fn aoc_days[][2] = {
   { aoc_day0_p0, aoc_day0_p1 },
   { aoc_day1_p0, aoc_day1_p1 },
   { aoc_day2_p0, aoc_day2_p1 },
-  { aoc_day3_p0, aoc_day3_p1 }
+  { aoc_day3_p0, aoc_day3_p1 },
+  { aoc_day4_p0, aoc_day4_p1 }
 };
 
 int main(int argc, char **argv) {
