@@ -15,16 +15,11 @@ static const size_t max_line_len = 65536;
 
 typedef struct entry entry;
 typedef struct entry {
+  char * name;
   size_t sz;
-  entry * parent;
-
-//  size_t files_len;
-//  entry * files;
-
   size_t dirs_len;
   entry * dirs;
-
-  char * name;
+  entry * parent;
 } entry;
 
 /*
@@ -254,10 +249,8 @@ static void parse_command(const char ** cmd) {
 
 static void calculate_total(const entry * e, size_t * total) {
   if(e->sz <= 100000) { *total += e->sz; }
-  if(e->dirs_len > 0) {
-    for(size_t i = 0; i < e->dirs_len; i++) {
-      calculate_total(&(e->dirs[i]), total);
-    }
+  for(size_t i = 0; i < e->dirs_len; i++) {
+    calculate_total(&(e->dirs[i]), total);
   }
 }
 
@@ -330,13 +323,9 @@ filesystem to run the update. What is the total size of that directory?
 */
 
 void find_min(const entry * e, size_t required, size_t stack[], size_t *stack_len) {
-  if(e->sz > required) {
-    stack[(*stack_len)++] = e->sz;
-  }
-  if(e->dirs_len > 0) {
-    for(size_t i = 0; i < e->dirs_len; i++) {
-      find_min(&(e->dirs[i]), required, stack, stack_len);
-    }
+  if(e->sz > required) { stack[(*stack_len)++] = e->sz; }
+  for(size_t i = 0; i < e->dirs_len; i++) {
+    find_min(&(e->dirs[i]), required, stack, stack_len);
   }
 }
 
@@ -347,10 +336,9 @@ int aoc_day6_p1(int argc, char **argv) {
   int result = read_lines(argc, argv, NULL, &aoc_day6_p0_text_reader);
   parse_lines(text);
 
-  size_t unused = max_avail - root.sz;
-
   size_t stack[65536] = { 0 };
   size_t stack_len = 0;
+  size_t unused = max_avail - root.sz;
   size_t required = min_free - unused;
   find_min(&root, required, stack, &stack_len);
 
