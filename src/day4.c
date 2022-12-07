@@ -118,25 +118,6 @@ typedef struct {
   procedure * procs;
 } day_4_state;
 
-static uint32_t read_uint(day_4_state * S) {
-  char buf[/* arbitrary */ 64] = { 0 };
-  const char * s = *(S->str);
-  char * b = &buf[0];
-  while(s && *s != '\0') {
-    if(isspace(*s)) { break; }
-    if(*s >= '0' && *s <= '9') {
-      *b = *s;
-      b++;
-    }
-    s++;
-  }
-
-  uint32_t value = 0;
-  parse_uint(buf, &value);
-  *(S->str) = s;
-  return value;
-}
-
 static void consume_space(day_4_state * S) {
   while(isspace(**(S->str))) { S->consumed++; (*S->str)++; }
 }
@@ -153,17 +134,17 @@ static void consume_str(const char * match, day_4_state * S) {
 
 static uint32_t consume_move(day_4_state * S) {
   consume_str("move ", S);
-  return read_uint(S);
+  return read_uint(S->str);
 }
 
 static uint32_t consume_from(day_4_state * S) {
   consume_str("from ", S);
-  return read_uint(S);
+  return read_uint(S->str);
 }
 
 static uint32_t consume_to(day_4_state * S) {
   consume_str("to ", S);
-  return read_uint(S);
+  return read_uint(S->str);
 }
 
 static void resize_instructions(day_4_state *S) {

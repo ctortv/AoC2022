@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "../include/utils.h"
@@ -37,7 +38,6 @@ err:
     return 0;
   }
 }
-
 
 int read_lines(int argc, char **argv, void * state, aoc_fn fn) {
   if(argc < 4) { goto err0; }
@@ -95,4 +95,22 @@ err:
   exit(EXIT_FAILURE);
 }
 
+uint32_t read_uint(const char ** str) {
+  char buf[/* arbitrary */ 64] = { 0 };
+  const char * s = *str;
+  char * b = &buf[0];
+  while(s && *s != '\0') {
+    if(isspace(*s)) { break; }
+    if(*s >= '0' && *s <= '9') {
+      *b = *s;
+      b++;
+    }
+    s++;
+  }
+
+  uint32_t value = 0;
+  parse_uint(buf, &value);
+  *str = s;
+  return value;
+}
 
