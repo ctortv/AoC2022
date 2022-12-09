@@ -8,6 +8,7 @@ aoc_SOURCES = \
 								day5.c \
 								day6.c \
 								day7.c \
+								day8.c \
 								aoc.c \
 								$(NULL)
 

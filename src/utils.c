@@ -128,3 +128,7 @@ void line_cp(const char * line, size_t * line_len, char ** dest, size_t * dest_l
     *dest_len += *line_len;
   }
 }
+
+inline void ws(const char **s) {
+  while(isspace(**s)) { ++(*s); }
+}

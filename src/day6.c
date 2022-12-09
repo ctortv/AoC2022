@@ -150,10 +150,6 @@ static entry root = {
 
 static entry * current = &root;
 
-static inline void ws(const char **s) {
-  while(isspace(**s)) { ++(*s); }
-}
-
 static void parse_name(const char **s, char **name) {
   ws(s);
 
