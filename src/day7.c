@@ -17,8 +17,6 @@ typedef enum dir {
   NORTH, SOUTH, EAST, WEST
 } dir;
 
-static const size_t max_line_len = 65536;
-
 typedef struct day7_state {
   node ** nodes;
   node * node_data;
@@ -27,19 +25,13 @@ typedef struct day7_state {
   char * map;
 } day7_state;
 
-
 static void build_map(const char * line, ssize_t read, void * state) {
   day7_state * S = (day7_state *)state;
   (void)state;
   if(read <= 0 || !line) { return; }
-  size_t len = strnlen(line, max_line_len);
-  assert(len > 0);
+  size_t len = 0;
+  line_cp(line, &len, &S->map, &S->map_len);
   if(len > 0) {
-    char * temp = realloc(S->map, S->map_len + len * sizeof * temp);
-    if(!temp) { abort(); }
-    S->map = temp;
-    memcpy(S->map + S->map_len, line, len);
-    S->map_len += len;
     if(len > 1 && S->cols <= 0) { S->cols = len - 1; }
     S->rows++;
   }
@@ -78,19 +70,18 @@ static size_t score_nodes(const node * n, const node * p, dir d) {
 
 static size_t walk_scored_nodes(day7_state * S) {
   size_t score = 0;
-  for(size_t x = 0; x < S->rows; x++) {
-    for(size_t y = 0; y < S->cols; y++) {
-      const node * n = &(S->nodes[x][y]);
-      size_t tree_score =
-          score_nodes(n, n->N, NORTH)
-        * score_nodes(n, n->S, SOUTH)
-        * score_nodes(n, n->E, EAST)
-        * score_nodes(n, n->W, WEST);
-      score = tree_score > score
-        ? tree_score
-        : score;
-    }
-  }
+  node * n = S->node_data,
+       * last = &S->node_data[S->rows * S->cols];
+  do {
+    size_t tree_score =
+        score_nodes(n, n->N, NORTH)
+      * score_nodes(n, n->S, SOUTH)
+      * score_nodes(n, n->E, EAST)
+      * score_nodes(n, n->W, WEST);
+    score = tree_score > score
+      ? tree_score
+      : score;
+  } while(++n < last);
   return score;
 }
 
@@ -104,16 +95,15 @@ static bool find_count(const node * n, const node * p, dir d, size_t * count) {
 }
 
 static size_t walk_counted_nodes(day7_state * S) {
+  node * n = S->node_data,
+       * last = &S->node_data[S->rows * S->cols];
   size_t count = 0;
-  for(size_t x = 0; x < S->rows; x++) {
-    for(size_t y = 0; y < S->cols; y++) {
-      const node * n = &S->nodes[x][y];
-      if(find_count(n, n->N, NORTH, &count)) continue;
-      if(find_count(n, n->S, SOUTH, &count)) continue;
-      if(find_count(n, n->E, EAST, &count)) continue;
-      if(find_count(n, n->W, WEST, &count)) continue;
-    }
-  }
+  do {
+    if(find_count(n, n->N, NORTH, &count)) continue;
+    if(find_count(n, n->S, SOUTH, &count)) continue;
+    if(find_count(n, n->E, EAST, &count)) continue;
+    if(find_count(n, n->W, WEST, &count)) continue;
+  } while(++n < last);
   return count;
 }
 

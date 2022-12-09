@@ -11,7 +11,6 @@
 #include "../include/utils.h"
 
 static const size_t max_name_len = 128;
-static const size_t max_line_len = 65536;
 
 typedef struct entry entry;
 typedef struct entry {

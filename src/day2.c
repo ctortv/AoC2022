@@ -9,7 +9,6 @@
 #include "../include/utils.h"
 #include "../include/day2.h"
 
-static const size_t max_line_len = /* arbitrary: */ 1024;
 static int group_comparer(const void * l, const void * r);
 
 /*

@@ -1,11 +1,14 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <assert.h>
 
 #include "../include/utils.h"
+
+const size_t max_line_len = 65536;
 
 unsigned long parse_arg(const char * arg, bool exit_on_fail) {
   static const int AOC_BASE = 10;
@@ -114,3 +117,14 @@ uint32_t read_uint(const char ** str) {
   return value;
 }
 
+void line_cp(const char * line, size_t * line_len, char ** dest, size_t * dest_len) {
+  *line_len = strnlen(line, max_line_len);
+  assert(*line_len > 0);
+  if(*line_len > 0) {
+    char * temp = realloc(*dest, *dest_len + *line_len * sizeof * temp);
+    if(!temp) { abort(); }
+    *dest = temp;
+    memcpy(*dest + *dest_len, line, *line_len);
+    *dest_len += *line_len;
+  }
+}
