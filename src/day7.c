@@ -25,6 +25,8 @@ typedef struct day7_state {
   char * map;
 } day7_state;
 
+static void free_state(day7_state * S);
+
 static void build_map(const char * line, ssize_t read, void * state) {
   day7_state * S = (day7_state *)state;
   (void)state;
@@ -147,10 +149,7 @@ int aoc_day7_p0(int argc, char **argv) {
 
   size_t count = walk_counted_nodes(&S);
   fprintf(stdout, "Visible Trees: %zu\n", count);
-
-  free(S.nodes), S.nodes = NULL;
-  free(S.node_data), S.node_data = NULL;
-  free(S.map), S.map = NULL;
+  free_state(&S);
 
   return result;
 }
@@ -164,11 +163,13 @@ int aoc_day7_p1(int argc, char **argv) {
 
   size_t score = walk_scored_nodes(&S);
   fprintf(stdout, "Highest Scenic Score: %zu\n", score);
-
-  free(S.nodes), S.nodes = NULL;
-  free(S.node_data), S.node_data = NULL;
-  free(S.map), S.map = NULL;
+  free_state(&S);
 
   return result;
 }
 
+static void free_state(day7_state * S) {
+  free(S->nodes), S->nodes = NULL;
+  free(S->node_data), S->node_data = NULL;
+  free(S->map), S->map = NULL;
+}
