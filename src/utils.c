@@ -98,6 +98,22 @@ err:
   exit(EXIT_FAILURE);
 }
 
+static void parse_int(const char * str, int32_t * I) {
+  static const int AOC_BASE = 10;
+  const long number = strtol(str, NULL, AOC_BASE);
+  if(errno == ERANGE) { goto err; }
+  if(errno) { goto err; }
+
+  assert(number >= INT32_MIN && number <= INT32_MAX);
+  *I = (int32_t)number;
+
+  return;
+
+err:
+  fprintf(stderr, "parse error: %s cannot parse to unsigned long.\n", str);
+  exit(EXIT_FAILURE);
+}
+
 uint32_t read_uint(const char ** str) {
   char buf[/* arbitrary */ 64] = { 0 };
   const char * s = *str;
@@ -113,6 +129,25 @@ uint32_t read_uint(const char ** str) {
 
   uint32_t value = 0;
   parse_uint(buf, &value);
+  *str = s;
+  return value;
+}
+
+int read_int(const char ** str) {
+  char buf[/* arbitrary */ 64] = { 0 };
+  const char * s = *str;
+  char * b = &buf[0];
+  while(s && *s != '\0') {
+    if(isspace(*s)) { break; }
+    if(*s == '-' || (*s >= '0' && *s <= '9')) {
+      *b = *s;
+      b++;
+    }
+    s++;
+  }
+
+  int32_t value = 0;
+  parse_int(buf, &value);
   *str = s;
   return value;
 }

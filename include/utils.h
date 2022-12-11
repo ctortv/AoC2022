@@ -13,6 +13,7 @@ unsigned long parse_arg(const char *, bool);
 void parse_uint(const char * str, uint32_t * I);
 uint32_t read_uint(const char ** str);
 int read_lines(int argc, char **argv, void * state, aoc_fn fn) ;
+int read_int(const char ** str);
 void line_cp(const char * line, size_t * line_len, char ** dest, size_t * dest_len);
 void ws(const char **s);
 
